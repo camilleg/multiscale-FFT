@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 // Argument x must be odd.
-inline unsigned reverse(unsigned x)
+unsigned reverse(unsigned x)
 {
   x = (((x & 0xaaaaaaaa) >> 1) | ((x & 0x55555555) << 1));
   x = (((x & 0xcccccccc) >> 2) | ((x & 0x33333333) << 2));
@@ -23,7 +23,7 @@ inline unsigned reverse(unsigned x)
 
 typedef struct { double rp, ip; } complex;
 
-inline complex timesRC(const double x, const complex c)
+complex timesRC(const double x, const complex c)
 {
   complex r;
   r.rp = x * c.rp;
@@ -31,7 +31,7 @@ inline complex timesRC(const double x, const complex c)
   return r;
 }
 
-inline complex timesCC(const complex c1, const complex c2)
+complex timesCC(const complex c1, const complex c2)
 {
   complex r;
   r.rp = (c1.rp*c2.rp - c1.ip*c2.ip);
@@ -39,7 +39,7 @@ inline complex timesCC(const complex c1, const complex c2)
   return r;
 }
 
-inline complex addCC(const complex c1, const complex c2)
+complex addCC(const complex c1, const complex c2)
 {
   complex r;
   r.rp = c1.rp + c2.rp;
@@ -47,7 +47,7 @@ inline complex addCC(const complex c1, const complex c2)
   return r;
 }
 
-inline complex addRC(const double x, const complex c)
+complex addRC(const double x, const complex c)
 {
   complex r;
   r.rp = x + c.rp;
@@ -55,7 +55,7 @@ inline complex addRC(const double x, const complex c)
   return r;
 }
 
-inline complex subCC(const complex c1, const complex c2)
+complex subCC(const complex c1, const complex c2)
 {
   complex r;
   r.rp = c1.rp - c2.rp;
@@ -63,7 +63,7 @@ inline complex subCC(const complex c1, const complex c2)
   return r;
 }
 
-inline complex subRC(const double x, const complex c)
+complex subRC(const double x, const complex c)
 {
   complex r;
   r.rp = x - c.rp;
@@ -71,7 +71,7 @@ inline complex subRC(const double x, const complex c)
   return r;
 }
 
-inline complex ce(const int n, const int N)
+complex ce(const int n, const int N)
 {
   complex r;
   r.rp = cos((-M_PI*2*n)/N);
@@ -79,7 +79,7 @@ inline complex ce(const int n, const int N)
   return r;
 }
 
-inline complex CfromR(const double x)
+complex CfromR(const double x)
 {
   complex r;
   r.rp = x;
