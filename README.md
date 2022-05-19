@@ -1,4 +1,4 @@
-## Efficient simultaneous multi-scale computation of FFTs
+# Efficient simultaneous multi-scale computation of FFTs
 
 An efficient algorithm for simultaneously computing FFTs at
 multiple window sizes is introduced. It requires 42% fewer
@@ -13,7 +13,7 @@ Published in 2009 as a
 of the [NSF](https://nsf.gov/awardsearch/showAward?AWD_ID=0807329) program
 [Foundations of Data and Visual Analytics](https://fodava.gatech.edu/about-us).
 
-### To cite
+## To cite
 Dave Cohen, Camille Goudeseune, and Mark Hasegawa-Johnson.  2009.  
 "Efficient simultaneous multi-scale computation of FFTs."  
 *Technical report GT-FODAVA-09-01.*
