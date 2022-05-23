@@ -1,13 +1,10 @@
-#include <fcntl.h>
-#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <unistd.h>
 
-// Argument x must be odd.
+// x must be odd.
 unsigned reverse(unsigned x)
 {
   x = (((x & 0xaaaaaaaa) >> 1) | ((x & 0x55555555) << 1));
@@ -15,9 +12,8 @@ unsigned reverse(unsigned x)
   x = (((x & 0xf0f0f0f0) >> 4) | ((x & 0x0f0f0f0f) << 4));
   x = (((x & 0xff00ff00) >> 8) | ((x & 0x00ff00ff) << 8));
   x = ( (x >> 16)              |  (x << 16)             );
-  while (x % 2 == 0) {
+  while (x % 2 == 0)
     x >>= 1;
-  }
   return x;
 }
 
@@ -85,7 +81,6 @@ complex CfromR(const double x)
   r.rp = x;
   r.ip = 0.0;
   return r;
-  // todo: test this, even as simple as it is.
 }
 
 double PSD(const complex x)
@@ -118,7 +113,7 @@ int testMyMath()
   return 1;
 }
 
-float * buf = NULL;
+float* buf = NULL;
 complex* t = NULL;
 complex* X = NULL;
 
@@ -128,21 +123,21 @@ int numwin = -1;
 
 // Stuff buf, only one window long (N1).
 
-void teststftZero(void)
+void teststftZero()
 {
   int i;
   for (i=0; i<N1; ++i)
     buf[i] = 0;
 }
 
-void teststftAlternating(void)
+void teststftAlternating()
 {
   int i;
   for (i=0; i<N1; ++i)
     buf[i] = (i % 2 == 0) ? 1 : -1;
 }
 
-void teststftBandlimit(void)
+void teststftBandlimit()
 {
   int b, i;
   for (b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b){
@@ -152,30 +147,30 @@ void teststftBandlimit(void)
   }
 }
 
-void teststftSinc(void)
+void teststftSinc()
 {
   int i;
   for (i=0; i<N1; ++i)
     buf[i] = sin((M_PI/8)*i)/((M_PI/8)*i);
 }
 
-void teststftImpulse(void)
+void teststftImpulse()
 {
   buf[0] = 100; // why changed to 10 ? ;;
 }
 
-void teststftDualImp(void)
+void teststftDualImp()
 {
   buf[0] = 10;
   buf[356] = 50; // why changed to buf[1780] = 50 ? ;;
 }
 
-void teststftShiftImp(void)
+void teststftShiftImp()
 {
   buf[500] = 100;
 }
 
-void teststftSingleSine(void)
+void teststftSingleSine()
 {
   int i;
   for (i=0; i<N1; ++i){ 
@@ -183,7 +178,7 @@ void teststftSingleSine(void)
   }
 }
 
-void teststftDualSine(void)
+void teststftDualSine()
 {
   int i;
   for (i=0; i<N1; ++i){ 
@@ -191,7 +186,7 @@ void teststftDualSine(void)
   }
 }
 
-void teststftConst(void)
+void teststftConst()
 {
   int i;
   for (i=0; i<N1; ++i)
@@ -257,17 +252,17 @@ int init()
 
 void computeTemp1(const int offset)
 {
-  int iBsize, iTnum, iTnum1, iTnum2, iTstep, iTstep1;
-  int Bsize = N1/2;
-  int Smax = poweroftwo*N1/4;
-  int Ssize = Smax;
   const float* window = buf + offset;
-  for(iBsize = 0; iBsize < poweroftwo-1; iBsize++, Bsize /= 2, Ssize /= 2){
-    iTstep = 0;
-    for(iTstep1 = 0; iTstep1 < Smax; iTstep1 += Ssize, iTstep += Bsize*2){
-      iTnum = 0;
-      for(iTnum1 = 0; iTnum1 < Bsize/2; iTnum1++){
-        for(iTnum2 = 0; iTnum2 < 2; iTnum2++, iTnum++){
+  const int Smax = poweroftwo*N1/4;
+  int Bsize = N1/2;
+  int Ssize = Smax;
+  for (int iBsize = 0; iBsize < poweroftwo-1; ++iBsize, Bsize/=2, Ssize/=2) {
+    int iTstep = 0;
+    int iTstep1 = 0;
+    for (; iTstep1 < Smax; iTstep1 += Ssize, iTstep += Bsize*2) {
+      int iTnum = 0;
+      for (int iTnum1 = 0; iTnum1 < Bsize/2; ++iTnum1) {
+        for (int iTnum2 = 0; iTnum2 < 2; ++iTnum2, ++iTnum) {
           getT(iBsize, iTstep1 + iTnum1, iTnum2) =
             timesRC((window[iTnum + iTstep] - window[iTnum + iTstep + Bsize]),
               ce(iTnum, Bsize*2));
@@ -354,7 +349,6 @@ void computeOdd()
   }
 }
 
-
 // Even-numbered DFT values.
 void computeEven()
 {
@@ -384,14 +378,13 @@ void computeNestedWindows(const int offset)
 
 void testSTFT(const char* filename, void testfunction())
 {
-  FILE *file;
-  teststftZero();
-  testfunction();
-  file = fopen(filename, "w");
-  if (file==NULL) {
-    printf("failed to create test-output file '%s'.\n", filename);
+  FILE* file = fopen(filename, "w");
+  if (!file) {
+    printf("Failed to create file '%s'.\n", filename);
     return;
   }
+  teststftZero();
+  testfunction();
 
   int i,j;
 #if 1
