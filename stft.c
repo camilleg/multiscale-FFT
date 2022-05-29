@@ -1,3 +1,4 @@
+#include <complex.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,94 +18,20 @@ unsigned reverse(unsigned x)
   return x;
 }
 
-typedef struct { double rp, ip; } complex;
-
-complex timesRC(const double x, const complex c)
+double complex ce(int n, int N)
 {
-  complex r;
-  r.rp = x * c.rp;
-  r.ip = x * c.ip;
-  return r;
+  return cexp(I * ((-M_PI*2*n) / N));
 }
 
-complex timesCC(const complex c1, const complex c2)
+double PSD(double complex x)
 {
-  complex r;
-  r.rp = (c1.rp*c2.rp - c1.ip*c2.ip);
-  r.ip = (c1.rp*c2.ip + c1.ip*c2.rp);
-  return r;
-}
-
-complex addCC(const complex c1, const complex c2)
-{
-  complex r;
-  r.rp = c1.rp + c2.rp;
-  r.ip = c1.ip + c2.ip;
-  return r;
-}
-
-complex addRC(const double x, const complex c)
-{
-  complex r;
-  r.rp = x + c.rp;
-  r.ip = c.ip;
-  return r;
-}
-
-complex subCC(const complex c1, const complex c2)
-{
-  complex r;
-  r.rp = c1.rp - c2.rp;
-  r.ip = c1.ip - c2.ip;
-  return r;
-}
-
-complex subRC(const double x, const complex c)
-{
-  complex r;
-  r.rp = x - c.rp;
-  r.ip = c.ip;
-  return r;
-}
-
-complex ce(const int n, const int N)
-{
-  complex r;
-  r.rp = cos((-M_PI*2*n)/N);
-  r.ip = sin((-M_PI*2*n)/N);
-  return r;
-}
-
-complex CfromR(const double x)
-{
-  complex r;
-  r.rp = x;
-  r.ip = 0.0;
-  return r;
-}
-
-double PSD(const complex x)
-{
-  return x.rp*x.rp + x.ip*x.ip;
+  return creal(x)*creal(x) + cimag(x)*cimag(x);
 }
 
 int testMyMath()
 {
-  complex r; r.rp = 1; r.ip = 2;
-  complex c; c.rp = 3; c.ip = 4;
-  complex foo = timesRC(5,r);
-  complex foo1 = timesCC(r,c);
-  complex foo2 = ce(1,4);
-  double foo3 = PSD(r);
-  double foo4 = PSD(c);
-  printf("test result for timesCR is %f, %f\n", foo.rp, foo.ip);
-  printf("test result for timesCC is %f, %f\n", foo1.rp, foo1.ip);
-  printf("test result for ce is %f, %f\n", foo2.rp, foo2.ip);
-  printf("test result for PSD (1,2) is %f\n", foo3);
-  printf("test result for PSD (3,4) is %f\n", foo4);
-  // todo: if these tests fail, return 0
   int i;
-  for (i=1; i<=999; i+=2) {
+  for (i=1; i<=9999999; i+=2) {
     if (reverse(reverse(i)) != i) {
       printf("bit-reverse failed for i=%d\n", i);
       return 0;
@@ -114,8 +41,8 @@ int testMyMath()
 }
 
 float* buf = NULL;
-complex* t = NULL;
-complex* X = NULL;
+double complex* t = NULL;
+double complex* X = NULL;
 
 #define poweroftwo (11)
 #define N1 (1 << poweroftwo)
@@ -221,13 +148,13 @@ void testcase() // this goes away
 }
 #endif
 
-const complex bogus = { 999.9876, 999.9876 } ;
+const double complex bogus = 999.9876 + 999.9876 * I;
 const long itMax = (poweroftwo-1) * poweroftwo * N1/2;
 const long iXMax = poweroftwo * N1;
 
 int init()
 {
-  const long C = sizeof(complex);
+  const size_t C = sizeof(double complex);
   printf("Array t will be %ld MB.\n", C * itMax /1000000);
   printf("Array X will be %ld MB.\n", C * iXMax /1000000);
   t = malloc(itMax * C);
@@ -264,8 +191,8 @@ void computeTemp1(const int offset)
       for (int iTnum1 = 0; iTnum1 < Bsize/2; ++iTnum1) {
         for (int iTnum2 = 0; iTnum2 < 2; ++iTnum2, ++iTnum) {
           getT(iBsize, iTstep1 + iTnum1, iTnum2) =
-            timesRC((window[iTnum + iTstep] - window[iTnum + iTstep + Bsize]),
-              ce(iTnum, Bsize*2));
+            (window[iTnum + iTstep] - window[iTnum + iTstep + Bsize]) *
+              ce(iTnum, Bsize*2);
         }
       }
     }
@@ -277,9 +204,9 @@ void computeSize2DFTs(const int offset)
   const float* window = buf + offset;
   int iWnum;
   for (iWnum = 0; iWnum < N1; iWnum+=2) {
-    // Actually timesRC(w +- w, ce(0,2)).
-    getX(0, iWnum    ) = CfromR(window[iWnum] + window[iWnum+1]);
-    getX(0, iWnum + 1) = CfromR(window[iWnum] - window[iWnum+1]);
+    // Actually (w +- w) * ce(0,2)).
+    getX(0, iWnum    ) = window[iWnum] + window[iWnum+1];
+    getX(0, iWnum + 1) = window[iWnum] - window[iWnum+1];
   }
 }
 
@@ -308,15 +235,15 @@ void computeMiddle()
 	  int iTnum;
           for(iTnum = 0; iTnum < 2; iTnum++, count++) {
 	    // This block spends most of the compute time.
-	    complex* const tt = &getT(iBsize, iTnum1, iTnum);
+	    double complex* const tt = &getT(iBsize, iTnum1, iTnum);
 	    tt[Bsize] = (Ssize > 2) ?
               ((count % Ssize < Ssize2) ?
-                addCC(tt[Ssize2], tt[0]) :
-                timesCC(subCC(tt[-Ssize2], tt[0]), ce(count%Ssize - Ssize2, Ssize))
+                tt[Ssize2] + tt[0] :
+                (tt[-Ssize2] - tt[0]) * ce(count%Ssize - Ssize2, Ssize)
 	      )
             : ((iTnum % 2 < 1) ?
-		addCC(tt[0], tt[1]) :
-		timesCC(subCC(tt[-1],      tt[0]), ce(count%Ssize - Ssize2, Ssize))
+		tt[0] + tt[1] :
+		(tt[-1]      - tt[0]) * ce(count%Ssize - Ssize2, Ssize)
 	      );
           }
         }
@@ -360,8 +287,8 @@ void computeEven()
     for (iWnum = 0; iWnum < iWnumMax; iWnum+=1) {
       for (iSnum = 0; iSnum < iSnumMax; iSnum++) {
         getX(iWsize+1, (iSnum*2) + (iWnum*iSnumMax*2)) =
-          addCC(getX(iWsize, iSnum + (iSnumMax*iWnum*2)),
-            getX(iWsize, iSnum + iSnumMax*(iWnum*2 + 1)));
+          getX(iWsize, iSnum + (iSnumMax*iWnum*2)) +
+          getX(iWsize, iSnum + iSnumMax*(iWnum*2 + 1));
       }
     }
   }
@@ -390,7 +317,7 @@ void testSTFT(const char* filename, void testfunction())
 #if 1
   for (j=0; j<N1; ++j) {
     for (i=0; i<poweroftwo; ++i) {
-      getX(i, j).rp = 999.999; // output file should not have any of these!
+      getX(i, j) = 999.999; // output file should not have any of these!
     }
   }
 #endif
@@ -404,8 +331,8 @@ void testSTFT(const char* filename, void testfunction())
 
   for (j=0; j<N1; j++) {
     for (i=0; i<poweroftwo; i++) {
-      getX(i, j).rp = PSD(getX(i, j));
-      fprintf(file, "%f,", getX(i, j).rp);
+      getX(i, j) = PSD(getX(i, j));
+      fprintf(file, "%f,", creal(getX(i, j)));
     }
     fprintf(file,"\n");
   }
@@ -481,7 +408,7 @@ int main()
   long c = 0;
   int i;
   for (i=0; i<itMax; ++i)
-    if (memcmp(&t[i], &bogus, sizeof(complex)))
+    if (memcmp(&t[i], &bogus, sizeof(double complex)))
       ++c;
   printf("nonbogus: %ld of %ld, %.2f%%\n", c, itMax, 100.0 * c/itMax);
 
