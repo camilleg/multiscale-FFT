@@ -30,8 +30,7 @@ double PSD(double complex x)
 
 int testMyMath()
 {
-  int i;
-  for (i=1; i<=9999999; i+=2) {
+  for (int i=1; i<=9999999; i+=2) {
     if (reverse(reverse(i)) != i) {
       printf("bit-reverse failed for i=%d\n", i);
       return 0;
@@ -52,32 +51,26 @@ int numwin = -1;
 
 void teststftZero()
 {
-  int i;
-  for (i=0; i<N1; ++i)
+  for (int i=0; i<N1; ++i)
     buf[i] = 0;
 }
 
 void teststftAlternating()
 {
-  int i;
-  for (i=0; i<N1; ++i)
+  for (int i=0; i<N1; ++i)
     buf[i] = (i % 2 == 0) ? 1 : -1;
 }
 
 void teststftBandlimit()
 {
-  int b, i;
-  for (b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b){
-    for (i=0; i<N1; ++i){
+  for (int b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b)
+    for (int i=0; i<N1; ++i)
       buf[i] += sin((b/1000.0)*i);
-    }
-  }
 }
 
 void teststftSinc()
 {
-  int i;
-  for (i=0; i<N1; ++i)
+  for (int i=0; i<N1; ++i)
     buf[i] = sin((M_PI/8)*i)/((M_PI/8)*i);
 }
 
@@ -99,24 +92,19 @@ void teststftShiftImp()
 
 void teststftSingleSine()
 {
-  int i;
-  for (i=0; i<N1; ++i){ 
+  for (int i=0; i<N1; ++i)
     buf[i] = cos((M_PI/4)*i);
-  }
 }
 
 void teststftDualSine()
 {
-  int i;
-  for (i=0; i<N1; ++i){ 
+  for (int i=0; i<N1; ++i)
     buf[i] = 5*cos((M_PI/3)*i) + cos((M_PI/16)*i);
-  }
 }
 
 void teststftConst()
 {
-  int i;
-  for (i=0; i<N1; ++i)
+  for (int i=0; i<N1; ++i)
     buf[i] = 10;
 }
 
@@ -163,13 +151,11 @@ int init()
     printf("out of memory.\n");
     return 0;
   }
-  int i;
-  for (i=0; i<itMax; ++i)
+  for (int i=0; i<itMax; ++i)
     t[i] = bogus;
 
   numwin = floor(numbytes/N1);
   // printf("The data file has %d windows.\n", numwin);
-
   return 1;
 }
 
@@ -225,7 +211,7 @@ void computeMiddle()
       int count1 = 0;
       int step;
       for (step = 0; step < pot; step++,Ssize/=2) {
-	const int Ssize2 =  Ssize/2;
+	const int Ssize2 = Ssize/2;
         const int iTstep = Bnum*Ssize1;
         int count = 0;
 	int i;
@@ -344,8 +330,7 @@ void timeSTFT()
   struct timeval t0, t;
   gettimeofday(&t0, 0); 
 
-  int i;
-  for (i=0; i<iMax; ++i)
+  for (int i=0; i<iMax; ++i)
     computeNestedWindows(0);
 
   gettimeofday(&t, 0);
@@ -392,7 +377,6 @@ int main()
   */
 
   testSTFT("stft_test_zeros.csv", &teststftZero);
-
   testSTFT("stft_test_alternating.csv", &teststftAlternating);
   testSTFT("stft_test_dual_sines.csv", &teststftDualSine);
   testSTFT("stft_test_bandlimit.csv", &teststftBandlimit);
@@ -404,12 +388,10 @@ int main()
   testSTFT("stft_test_sinc.csv", &teststftSinc);
   //run();  
 
-  long c = 0;
-  int i;
-  for (i=0; i<itMax; ++i)
-    if (memcmp(&t[i], &bogus, sizeof(double complex)))
+  long c = 0L;
+  for (int i=0; i<itMax; ++i)
+    if (t[i] != bogus)
       ++c;
   printf("nonbogus: %ld of %ld, %.2f%%\n", c, itMax, 100.0 * c/itMax);
-
   return 0;
 }
