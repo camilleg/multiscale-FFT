@@ -155,8 +155,7 @@ const long iXMax = poweroftwo * N1;
 int init()
 {
   const size_t C = sizeof(double complex);
-  printf("Array t will be %ld MB.\n", C * itMax /1000000);
-  printf("Array X will be %ld MB.\n", C * iXMax /1000000);
+  printf("Array t will be %.1f MB; X, %.1f MB.\n", C*itMax/1e6, C*iXMax/1e6);
   t = malloc(itMax * C);
   X = malloc(iXMax * C);
   buf = malloc(N1*sizeof(float));
