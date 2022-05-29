@@ -1,4 +1,4 @@
-CFLAGS = -O3 -Wall -Werror -pedantic
+CFLAGS = -O3 -Wall -Werror -pedantic -march=native -ffast-math
 LDLIBS = -lm
 
 all: stft
