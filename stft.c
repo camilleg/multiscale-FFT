@@ -5,14 +5,17 @@
 #include <string.h>
 #include <sys/time.h>
 
-// x must be odd.
+// Reverse a 32-bit value, which must be odd.
+// Divide the bits into blocks of size b=1.
+// Swap adjacent blocks.
+// Double b and repeat, until b reaches half of the word size.
 unsigned reverse(unsigned x)
 {
   x = (((x & 0xaaaaaaaa) >> 1) | ((x & 0x55555555) << 1));
   x = (((x & 0xcccccccc) >> 2) | ((x & 0x33333333) << 2));
   x = (((x & 0xf0f0f0f0) >> 4) | ((x & 0x0f0f0f0f) << 4));
   x = (((x & 0xff00ff00) >> 8) | ((x & 0x00ff00ff) << 8));
-  x = ( (x >> 16)              |  (x << 16)             );
+  x = (( x              >> 16) | ( x               << 16));
   while (x % 2 == 0)
     x >>= 1;
   return x;
@@ -23,6 +26,7 @@ double complex ce(int n, int N)
   return cexp(I * ((-M_PI*2*n) / N));
 }
 
+// Power spectral density, i.e., signal power distributed over frequency.
 double PSD(double complex x)
 {
   return creal(x)*creal(x) + cimag(x)*cimag(x);
