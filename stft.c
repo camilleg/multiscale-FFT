@@ -204,21 +204,19 @@ void computeMiddle()
   int Ssize1 = Smax;
   int pot = poweroftwo-1;
   int iBsize;
-  for (iBsize = 0; iBsize < poweroftwo-1; iBsize++,Bsize/=2,pot--,c*=2,Ssize1/=2) {
+  for (iBsize = 0; iBsize < poweroftwo-1; ++iBsize,Bsize/=2,--pot,c*=2,Ssize1/=2) {
     int Bnum;
-    for (Bnum = 0; Bnum < c; Bnum++) {
+    for (Bnum = 0; Bnum < c; ++Bnum) {
       int Ssize=Bsize;
       int count1 = 0;
       int step;
-      for (step = 0; step < pot; step++,Ssize/=2) {
+      for (step = 0; step < pot; ++step,Ssize/=2) {
 	const int Ssize2 = Ssize/2;
         const int iTstep = Bnum*Ssize1;
         int count = 0;
-	int i;
-        for (i = 0; i < Bsize; i+=2, count1++) {
+        for (int i = 0; i < Bsize; i+=2,++count1) {
           const int iTnum1 = iTstep + count1;
-	  int iTnum;
-          for(iTnum = 0; iTnum < 2; iTnum++, count++) {
+          for (int iTnum = 0; iTnum < 2; ++iTnum,++count) {
 	    // This block spends most of the compute time.
 	    double complex* const tt = &getT(iBsize, iTnum1, iTnum);
 	    tt[Bsize] = (Ssize > 2) ?
@@ -240,19 +238,18 @@ void computeMiddle()
 // Odd-numbered DFT values.
 void computeOdd()
 {
-  int iWsize,iWnum,iTnum,iTnum1,iTnum2;
   int d = N1/4;
   int iBsize = poweroftwo-2;
   int Smin = poweroftwo;
   int Bsize = 4;
   int pot = 1;
-  for (iWsize = 1; iWsize < poweroftwo; iWsize++,d/=2,iBsize--,Bsize*=2,Smin*=2,pot++) {
+  for (int iWsize = 1; iWsize < poweroftwo; ++iWsize,d/=2,--iBsize,Bsize*=2,Smin*=2,++pot) {
     int Tstep = pot * Bsize/4;
-    for (iWnum = 0; iWnum < d; iWnum++, Tstep+=Smin) {
+    for (int iWnum = 0; iWnum < d; ++iWnum, Tstep+=Smin) {
       int count = 0;
-      iTnum = Bsize/2;
-      for (iTnum1 = 0; iTnum1 < Bsize/2; iTnum1+=2, count++) {
-        for (iTnum2 = 0; iTnum2 < 2; iTnum2++, iTnum++) {
+      int iTnum = Bsize/2;
+      for (int iTnum1 = 0; iTnum1 < Bsize/2; iTnum1+=2, ++count) {
+        for (int iTnum2 = 0; iTnum2 < 2; ++iTnum2, ++iTnum) {
           getX(iWsize, reverse(iTnum) + (iWnum * Bsize)) =
             getT(iBsize, Tstep + count, iTnum2);
         }
@@ -266,11 +263,10 @@ void computeEven()
 {
   const int iWsizeMax = poweroftwo;
   int iSnumMax = 2; // aka window size
-  int iWsize, iWnum, iSnum;
-  for (iWsize = 0; iWsize < iWsizeMax-1; iWsize++,iSnumMax*=2) {
+  for (int iWsize = 0; iWsize < iWsizeMax-1; ++iWsize,iSnumMax*=2) {
     const int iWnumMax = N1/(iSnumMax*2);
-    for (iWnum = 0; iWnum < iWnumMax; iWnum+=1) {
-      for (iSnum = 0; iSnum < iSnumMax; iSnum++) {
+    for (int iWnum = 0; iWnum < iWnumMax; ++iWnum) {
+      for (int iSnum = 0; iSnum < iSnumMax; ++iSnum) {
         getX(iWsize+1, (iSnum*2) + (iWnum*iSnumMax*2)) =
           getX(iWsize, iSnum + (iSnumMax*iWnum*2)) +
           getX(iWsize, iSnum + iSnumMax*(iWnum*2 + 1));
@@ -309,13 +305,13 @@ void testSTFT(const char* filename, void testfunction())
 
   computeNestedWindows(0);
   int h = 2;
-  for (i = 0; i < poweroftwo; i++, h*=2) {
+  for (i = 0; i < poweroftwo; ++i, h*=2) {
     fprintf(file,"\"w. 2^%d=%d.\",", i+1, h);
   }
   fprintf(file,"\n");
 
-  for (j=0; j<N1; j++) {
-    for (i=0; i<poweroftwo; i++) {
+  for (j=0; j<N1; ++j) {
+    for (i=0; i<poweroftwo; ++i) {
       getX(i, j) = PSD(getX(i, j));
       fprintf(file, "%f,", creal(getX(i, j)));
     }
