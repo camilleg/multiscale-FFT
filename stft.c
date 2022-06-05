@@ -46,10 +46,11 @@ int testMyMath()
 float* buf = NULL;
 double complex* t = NULL;
 double complex* X = NULL;
+int numwin = -1;
 
+// C lacks C++'s constexpr.
 #define poweroftwo (11)
 #define N1 (1 << poweroftwo)
-int numwin = -1;
 
 // Stuff buf, only one window long (N1).
 
@@ -67,30 +68,34 @@ void teststftAlternating()
 
 void teststftBandlimit()
 {
-  for (int b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b)
-    for (int i=0; i<N1; ++i)
+  teststftZero();
+  for (int i=0; i<N1; ++i)
+    for (int b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b)
       buf[i] += sin((b/1000.0)*i);
 }
 
 void teststftSinc()
 {
   for (int i=0; i<N1; ++i)
-    buf[i] = sin((M_PI/8)*i)/((M_PI/8)*i);
+    buf[i] = sin((M_PI/8)*i) / ((M_PI/8)*i);
 }
 
 void teststftImpulse()
 {
+  teststftZero();
   buf[0] = 100; // why changed to 10 ? ;;
 }
 
 void teststftDualImp()
 {
+  teststftZero();
   buf[0] = 10;
   buf[356] = 50; // why changed to buf[1780] = 50 ? ;;
 }
 
 void teststftShiftImp()
 {
+  teststftZero();
   buf[500] = 100;
 }
 
@@ -164,7 +169,16 @@ int init()
 }
 
 #define getT(i, j, k) (t[(i)*poweroftwo*N1/2 + (j)*2 + (k)])
-#define getX(i, j) (X[(i)*N1 + (j)])
+
+double complex getX(int i, int j)
+{
+  return X[i*N1 + j];
+}
+void setX(int i, int j, double complex c)
+{
+  X[i*N1 + j] = c;
+}
+
 
 void computeTemp1(const int offset)
 {
@@ -190,12 +204,11 @@ void computeTemp1(const int offset)
 
 void computeSize2DFTs(const int offset)
 {
-  const float* window = buf + offset;
-  int iWnum;
-  for (iWnum = 0; iWnum < N1; iWnum+=2) {
+  const float* w = buf + offset; // window
+  for (int iWnum = 0; iWnum < N1; iWnum+=2) {
     // Actually (w +- w) * ce(0,2)).
-    getX(0, iWnum    ) = window[iWnum] + window[iWnum+1];
-    getX(0, iWnum + 1) = window[iWnum] - window[iWnum+1];
+    setX(0, iWnum  , w[iWnum] + w[iWnum+1]);
+    setX(0, iWnum+1, w[iWnum] - w[iWnum+1]);
   }
 }
 
@@ -254,8 +267,8 @@ void computeOdd()
       int iTnum = Bsize/2;
       for (int iTnum1 = 0; iTnum1 < Bsize/2; iTnum1+=2, ++count) {
         for (int iTnum2 = 0; iTnum2 < 2; ++iTnum2, ++iTnum) {
-          getX(iWsize, reverse(iTnum) + (iWnum * Bsize)) =
-            getT(iBsize, Tstep + count, iTnum2);
+          setX(iWsize, reverse(iTnum) + (iWnum * Bsize),
+            getT(iBsize, Tstep + count, iTnum2));
         }
       }
     }
@@ -271,9 +284,9 @@ void computeEven()
     const int iWnumMax = N1/(iSnumMax*2);
     for (int iWnum = 0; iWnum < iWnumMax; ++iWnum) {
       for (int iSnum = 0; iSnum < iSnumMax; ++iSnum) {
-        getX(iWsize+1, (iSnum*2) + (iWnum*iSnumMax*2)) =
-          getX(iWsize, iSnum + (iSnumMax*iWnum*2)) +
-          getX(iWsize, iSnum + iSnumMax*(iWnum*2 + 1));
+        setX(iWsize+1, iSnum*2 + iSnumMax*(iWnum*2),
+          getX(iWsize, iSnum   + iSnumMax*(iWnum*2    )) +
+          getX(iWsize, iSnum   + iSnumMax*(iWnum*2 + 1)));
       }
     }
   }
@@ -299,12 +312,10 @@ void testSTFT(const char* filename, void testfunction())
   testfunction();
 
   int i,j;
-#if 1
-  for (j=0; j<N1; ++j) {
-    for (i=0; i<poweroftwo; ++i) {
-      getX(i, j) = 999.999; // output file should not have any of these!
-    }
-  }
+#if 0
+  for (i=0; i<poweroftwo; ++i)
+    for (j=0; j<N1; ++j)
+      setX(i, j, 999.999); // Output should not have any of these.
 #endif
 
   computeNestedWindows(0);
@@ -316,7 +327,7 @@ void testSTFT(const char* filename, void testfunction())
 
   for (j=0; j<N1; ++j) {
     for (i=0; i<poweroftwo; ++i) {
-      getX(i, j) = PSD(getX(i, j));
+      setX(i, j, PSD(getX(i, j)));
       fprintf(file, "%f,", creal(getX(i, j)));
     }
     fprintf(file,"\n");
@@ -338,29 +349,28 @@ void timeSTFT()
 }
 
 #if 0
-void run()
+int run()
 {
   const char* filename = "stft_test.csv";
-  FILE *file = fopen(filename, "w"); 
-  if(file==NULL) {
+  FILE* file = fopen(filename, "w");
+  if (!file) {
     printf("failed to create test-output file '%s'.\n", filename);
     return 1;
   }
-
-  int l;  
-  for (l = 0; l < numwin*N1; l+=N1) {
+  for (int l = 0; l < numwin*N1; l+=N1) {
     computeNestedWindows(l);
     int i,j,k;
     int h = 2;
       for (i = 0; i < poweroftwo; ++i,h*=2) {
         for (j = 0; j < N1/h; ++j) {
           for (k = 0; k < h; ++k) {
-            getX(i, j, k).rp = sqrt(getX(i, j, k).rp*getX(i, j, k).rp + getX(i, j, k).ip*getX(i, j, k).ip);
-            fprintf(file, "%d, ", getX(i, j, k).rp);
+            setX(i, j, k, sqrt(PSD(getX(i, j, k))));
+            fprintf(file, "%d, ", creal(getX(i, j, k)));
           }
         }
       }
   }
+  return 0;
 }
 #endif
 
