@@ -1,5 +1,6 @@
 #include <complex.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,15 +33,15 @@ double PSD(double complex x)
   return creal(x)*creal(x) + cimag(x)*cimag(x);
 }
 
-int testMyMath()
+bool testMyMath()
 {
   for (int i=1; i<=9999999; i+=2) {
     if (reverse(reverse(i)) != i) {
       printf("bit-reverse failed for i=%d\n", i);
-      return 0;
+      return false;
     }
   }
-  return 1;
+  return true;
 }
 
 float* buf = NULL;
@@ -145,27 +146,30 @@ void testcase() // this goes away
 }
 #endif
 
-const double complex bogus = 999.9876 + 999.9876 * I;
+bool fMeasureRAM = false;
+const double complex unusedRAM = 999.9876 + 999.9876 * I;
+
 const long itMax = (poweroftwo-1) * poweroftwo * N1/2;
 const long iXMax = poweroftwo * N1;
 
-int init()
+bool init()
 {
   const size_t C = sizeof(double complex);
   printf("Array t will be %.1f MB; X, %.1f MB.\n", C*itMax/1e6, C*iXMax/1e6);
   t = malloc(itMax * C);
   X = malloc(iXMax * C);
-  buf = malloc(N1*sizeof(float));
+  buf = malloc(N1 * sizeof(float));
   if (!buf || !t || !X) {
     printf("out of memory.\n");
-    return 0;
+    return false;
   }
-  for (int i=0; i<itMax; ++i)
-    t[i] = bogus;
+  if (fMeasureRAM)
+    for (int i=0; i<itMax; ++i)
+      t[i] = unusedRAM;
 
   numwin = floor(numbytes/N1);
   // printf("The data file has %d windows.\n", numwin);
-  return 1;
+  return true;
 }
 
 #define getT(i, j, k) (t[(i)*poweroftwo*N1/2 + (j)*2 + (k)])
@@ -178,7 +182,6 @@ void setX(int i, int j, double complex c)
 {
   X[i*N1 + j] = c;
 }
-
 
 void computeTemp1(const int offset)
 {
@@ -340,22 +343,20 @@ void timeSTFT()
   const int iMax = 10;
   struct timeval t0, t;
   gettimeofday(&t0, 0); 
-
   for (int i=0; i<iMax; ++i)
     computeNestedWindows(0);
-
   gettimeofday(&t, 0);
   printf("Mean %.4f usec\n", ((t.tv_sec-t0.tv_sec)*1e6 + (t.tv_usec-t0.tv_usec))/iMax);
 }
 
 #if 0
-int run()
+bool run()
 {
   const char* filename = "stft_test.csv";
   FILE* file = fopen(filename, "w");
   if (!file) {
     printf("failed to create test-output file '%s'.\n", filename);
-    return 1;
+    return true;
   }
   for (int l = 0; l < numwin*N1; l+=N1) {
     computeNestedWindows(l);
@@ -370,7 +371,7 @@ int run()
         }
       }
   }
-  return 0;
+  return false;
 }
 #endif
 
@@ -398,10 +399,12 @@ int main()
   testSTFT("stft_test_sinc.csv", &teststftSinc);
   //run();  
 
-  long c = 0L;
-  for (int i=0; i<itMax; ++i)
-    if (t[i] != bogus)
-      ++c;
-  printf("nonbogus: %ld of %ld, %.2f%%\n", c, itMax, 100.0 * c/itMax);
+  if (fMeasureRAM) {
+    long c = 0L;
+    for (int i=0; i<itMax; ++i)
+      if (t[i] != unusedRAM)
+	++c;
+    printf("Fraction of t[] used = %ld / %ld = %.2f%%.\n", c, itMax, 100.0 * c/itMax);
+  }
   return 0;
 }
