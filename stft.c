@@ -69,7 +69,6 @@ void teststftAlternating()
 
 void teststftBandlimit()
 {
-  teststftZero();
   for (int i=0; i<N1; ++i)
     for (int b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b)
       buf[i] += sin((b/1000.0)*i);
@@ -83,20 +82,17 @@ void teststftSinc()
 
 void teststftImpulse()
 {
-  teststftZero();
   buf[0] = 100; // why changed to 10 ? ;;
 }
 
 void teststftDualImp()
 {
-  teststftZero();
   buf[0] = 10;
   buf[356] = 50; // why changed to buf[1780] = 50 ? ;;
 }
 
 void teststftShiftImp()
 {
-  teststftZero();
   buf[500] = 100;
 }
 
@@ -183,12 +179,13 @@ void setX(int i, int j, double complex c)
   X[i*N1 + j] = c;
 }
 
+// First level of temp variables, used by middle branches.
 void computeTemp1(const int offset)
 {
   const float* window = buf + offset;
   const int Smax = poweroftwo*N1/4;
-  int Bsize = N1/2;
   int Ssize = Smax;
+  int Bsize = N1/2;
   for (int iBsize = 0; iBsize < poweroftwo-1; ++iBsize, Bsize/=2, Ssize/=2) {
     int iTstep = 0;
     int iTstep1 = 0;
@@ -218,19 +215,16 @@ void computeSize2DFTs(const int offset)
 // Middle branches.
 void computeMiddle()
 {
+  const int Smax = poweroftwo*N1/4;
+  int Ssize1 = Smax;
   int Bsize = N1/2;
   int c = 1;
-  int Smax = poweroftwo*N1/4;
-  int Ssize1 = Smax;
   int pot = poweroftwo-1;
-  int iBsize;
-  for (iBsize = 0; iBsize < poweroftwo-1; ++iBsize,Bsize/=2,--pot,c*=2,Ssize1/=2) {
-    int Bnum;
-    for (Bnum = 0; Bnum < c; ++Bnum) {
-      int Ssize=Bsize;
+  for (int iBsize = 0; iBsize < poweroftwo-1; ++iBsize,Bsize/=2,--pot,c*=2,Ssize1/=2) {
+    for (int Bnum = 0; Bnum < c; ++Bnum) {
+      int Ssize = Bsize;
       int count1 = 0;
-      int step;
-      for (step = 0; step < pot; ++step,Ssize/=2) {
+      for (int step = 0; step < pot; ++step,Ssize/=2) {
 	const int Ssize2 = Ssize/2;
         const int iTstep = Bnum*Ssize1;
         int count = 0;
@@ -262,7 +256,7 @@ void computeOdd()
   int iBsize = poweroftwo-2;
   int Smin = poweroftwo;
   int Bsize = 4;
-  int pot = 1;
+  int pot = 1; // power of two
   for (int iWsize = 1; iWsize < poweroftwo; ++iWsize,d/=2,--iBsize,Bsize*=2,Smin*=2,++pot) {
     int Tstep = pot * Bsize/4;
     for (int iWnum = 0; iWnum < d; ++iWnum, Tstep+=Smin) {
@@ -346,7 +340,7 @@ void timeSTFT()
   for (int i=0; i<iMax; ++i)
     computeNestedWindows(0);
   gettimeofday(&t, 0);
-  printf("Mean %.4f usec\n", ((t.tv_sec-t0.tv_sec)*1e6 + (t.tv_usec-t0.tv_usec))/iMax);
+  printf("Mean %.4f usec\n", ((t.tv_sec-t0.tv_sec)*1e6 + (t.tv_usec-t0.tv_usec)) / iMax);
 }
 
 #if 0
