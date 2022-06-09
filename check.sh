@@ -20,7 +20,7 @@ fi
 # - .tar files differ in file owner and timestamp.
 
 a=$(shasum stft_test_*.csv | shasum - | sed 's/ .*//')
-if [[ "$a" != "bdf6a1f46ab79888d1d43bb07eef23a99df21bbd" ]]; then
+if [[ "$a" != "37f0d22b6a23c7c4f213145caf61d561907f9e56" ]]; then
   echo "stft_test_*.csv is incorrect."
   exit 1
 fi

@@ -88,7 +88,9 @@ void teststftImpulse()
 void teststftDualImp()
 {
   buf[0] = 10;
-  buf[356] = 50; // why changed to buf[1780] = 50 ? ;;
+  buf[1780] = 50;
+  // buf[1780] matches figure 2 in the published paper.
+  // buf[356] matches what was tested against Matlab's implementation.
 }
 
 void teststftShiftImp()

@@ -1,5 +1,7 @@
 stft
 stft_test_*.csv
+fig2.png
+fig3.png
 
 # Prerequisites
 *.d
