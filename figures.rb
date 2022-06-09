@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+# Prerequisites:
+# sudo gem install gnuplot
+# Linux: sudo apt install imagemagick
+# macOS: brew install imagemagick
 
 abort "Usage: #$0 out.png numrows in.csv" if ARGV.size != 3
 $out, $numrows, $csv = ARGV
