@@ -3,15 +3,10 @@
 # Does the output of ./stft still match the 2009 output,
 # which matched MATLAB's output?
 
-uname=$(uname -s 2>/dev/null)
-if [[ "$uname" == "Darwin" ]]; then
-  # On macOS, change all nan to -nan, to match Linux.
-  if ! grep -q -e '-nan' stft_test_sinc.csv; then
-    # Found no '-nan', thus we won't be changing '-nan' to '--nan'.
-    sed -I '' 's/nan,/-nan,/g' stft_test_sinc.csv
-  fi
-# elif [[ "$uname" == "Linux" ]]; then
-#   :
+# Change any nan to -nan, to match the original build.
+if ! grep -q -e '-nan' stft_test_sinc.csv; then
+  # Found no '-nan', thus we won't be changing '-nan' to '--nan'.
+  sed -i 's/nan,/-nan,/g' stft_test_sinc.csv
 fi
 
 # Use shasum instead of more familiar tools:
