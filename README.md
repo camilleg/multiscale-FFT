@@ -13,6 +13,22 @@ This software was published in 2009 as a
 of the [NSF](https://nsf.gov/awardsearch/showAward?AWD_ID=0807329) program
 [Foundations of Data and Visual Analytics](https://fodava.gatech.edu/about-us).
 
+## To build and test
+
+`sudo apt install make g++`
+
+`make test`
+
+## To regenerate the report's figures
+
+`sudo apt install imagemagick ruby`
+
+`sudo apt install gnuplot-x11` (or `-nox` or `-qt`)
+
+`sudo gem install gnuplot`
+
+`make figures`
+
 ## To cite
 
 Dave Cohen, Camille Goudeseune, and Mark Hasegawa-Johnson.  2009.  
