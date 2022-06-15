@@ -6,7 +6,12 @@
 # Change any nan to -nan, to match the original build.
 if ! grep -q -e '-nan' stft_test_sinc.csv; then
   # Found no '-nan', thus we won't be changing '-nan' to '--nan'.
-  sed -i 's/nan,/-nan,/g' stft_test_sinc.csv
+  uname=$(uname -s 2>/dev/null)
+  if [[ "$uname" == "Darwin" ]]; then
+    sed -i '' 's/nan,/-nan,/g' stft_test_sinc.csv
+  else
+    sed -i 's/nan,/-nan,/g' stft_test_sinc.csv
+  fi
 fi
 
 # Use shasum instead of more familiar tools:
