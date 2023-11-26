@@ -37,7 +37,7 @@ double PSD(double complex x)
   return creal(x)*creal(x) + cimag(x)*cimag(x);
 }
 
-bool testMyMath()
+bool testMyMath(void)
 {
   for (int i=1; i<=9999999; i+=2) {
     if (reverse(reverse(i)) != i) {
@@ -59,37 +59,37 @@ int numwin = -1;
 
 // Stuff buf, only one window long (N1).
 
-void teststftZero()
+void teststftZero(void)
 {
   for (int i=0; i<N1; ++i)
     buf[i] = 0;
 }
 
-void teststftAlternating()
+void teststftAlternating(void)
 {
   for (int i=0; i<N1; ++i)
     buf[i] = (i % 2 == 0) ? 1 : -1;
 }
 
-void teststftBandlimit()
+void teststftBandlimit(void)
 {
   for (int i=0; i<N1; ++i)
     for (int b = (M_PI/8)*1000; b < (M_PI/4)*1000; ++b)
       buf[i] += sin((b/1000.0)*i);
 }
 
-void teststftSinc()
+void teststftSinc(void)
 {
   for (int i=0; i<N1; ++i)
     buf[i] = sin((M_PI/8)*i) / ((M_PI/8)*i);
 }
 
-void teststftImpulse()
+void teststftImpulse(void)
 {
   buf[0] = 100; // why changed to 10 ? ;;
 }
 
-void teststftDualImp()
+void teststftDualImp(void)
 {
   buf[0] = 10;
   buf[1780] = 50;
@@ -97,24 +97,24 @@ void teststftDualImp()
   // buf[356] matches what was tested against Matlab's implementation.
 }
 
-void teststftShiftImp()
+void teststftShiftImp(void)
 {
   buf[500] = 100;
 }
 
-void teststftSingleSine()
+void teststftSingleSine(void)
 {
   for (int i=0; i<N1; ++i)
     buf[i] = cos((M_PI/4)*i);
 }
 
-void teststftDualSine()
+void teststftDualSine(void)
 {
   for (int i=0; i<N1; ++i)
     buf[i] = 5*cos((M_PI/3)*i) + cos((M_PI/16)*i);
 }
 
-void teststftConst()
+void teststftConst(void)
 {
   for (int i=0; i<N1; ++i)
     buf[i] = 10;
@@ -125,11 +125,11 @@ void teststftConst()
 const int numbytes = 1<<12;
 
 #if 0
-void testcase() // this goes away
+void testcase(void) // this goes away
 {
-  
+
   // This is more than one window long, of course!
-  
+
   FILE* pf = fopen("cmi_8bit_8kHz.raw", "rb");
   int numbytesRead = fread(buf, 1, numbytes, pf);
   if (numbytesRead != numbytes) {
@@ -140,7 +140,7 @@ void testcase() // this goes away
     printf("Read %d bytes of audio data.\n", numbytes);
   }
   fclose(pf);
-  
+
   /*printf("HACK: noised input data.\n\n\n\n\n");
   for (i=0; i<N1; ++i)
     buf[i] = (float)rand() / RAND_MAX;*/ // from 0 inclusive to 1 exclusive.
@@ -154,7 +154,7 @@ const double complex unusedRAM = 999.9876 + 999.9876 * I;
 const long itMax = (poweroftwo-1) * poweroftwo * N1/2;
 const long iXMax = poweroftwo * N1;
 
-bool init()
+bool init(void)
 {
   const size_t C = sizeof(double complex);
   printf("Array t will be %.1f MB; X, %.1f MB.\n", C*itMax/1e6, C*iXMax/1e6);
@@ -219,7 +219,7 @@ void computeSize2DFTs(const int offset)
 }
 
 // Middle branches.
-void computeMiddle()
+void computeMiddle(void)
 {
   const int Smax = poweroftwo*N1/4;
   int Ssize1 = Smax;
@@ -256,7 +256,7 @@ void computeMiddle()
 }
 
 // Odd-numbered DFT values.
-void computeOdd()
+void computeOdd(void)
 {
   int d = N1/4;
   int iBsize = poweroftwo-2;
@@ -279,7 +279,7 @@ void computeOdd()
 }
 
 // Even-numbered DFT values.
-void computeEven()
+void computeEven(void)
 {
   const int iWsizeMax = poweroftwo;
   int iSnumMax = 2; // aka window size
@@ -304,7 +304,7 @@ void computeNestedWindows(const int offset)
   computeEven();
 }
 
-void testSTFT(const char* filename, void testfunction())
+void testSTFT(const char* filename, void testfunction(void))
 {
   FILE* file = fopen(filename, "w");
   if (!file) {
@@ -337,12 +337,12 @@ void testSTFT(const char* filename, void testfunction())
   }
 }
 
-void timeSTFT()
+void timeSTFT(void)
 {
   teststftZero();
   const int iMax = 10;
   struct timeval t0, t;
-  gettimeofday(&t0, 0); 
+  gettimeofday(&t0, 0);
   for (int i=0; i<iMax; ++i)
     computeNestedWindows(0);
   gettimeofday(&t, 0);
@@ -350,7 +350,7 @@ void timeSTFT()
 }
 
 #if 0
-bool run()
+bool run(void)
 {
   const char* filename = "stft_test.csv";
   FILE* file = fopen(filename, "w");
@@ -375,7 +375,7 @@ bool run()
 }
 #endif
 
-int main()
+int main(void)
 {
   if (!testMyMath())
     return 1;
@@ -397,7 +397,7 @@ int main()
   testSTFT("stft_test_single_sine.csv", &teststftSingleSine);
   testSTFT("stft_test_constant.csv", &teststftConst);
   testSTFT("stft_test_sinc.csv", &teststftSinc);
-  //run();  
+  //run();
 
   if (fMeasureRAM) {
     long c = 0L;
