@@ -6,6 +6,10 @@
 #include <string.h>
 #include <sys/time.h>
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 // Reverse a 32-bit value, which must be odd.
 // Divide the bits into blocks of size b=1.
 // Swap adjacent blocks.
