@@ -23,8 +23,6 @@ of the [NSF](https://nsf.gov/awardsearch/showAward?AWD_ID=0807329) program
 
 `sudo apt install imagemagick ruby`
 
-`sudo apt install gnuplot-x11` (or `-nox` or `-qt`)
-
 `sudo gem install gnuplot`
 
 `make figures`
